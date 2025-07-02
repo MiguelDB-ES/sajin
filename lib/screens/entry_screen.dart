@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sajin/screens/login_screen.dart';
 import 'package:sajin/screens/register_screen.dart';
 import 'package:sajin/utils/app_constants.dart';
@@ -11,28 +12,31 @@ class EntryScreen extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Spacer(),
+              // Logo do aplicativo com estilo Pacifico
               Text(
                 AppConstants.appName,
-                style: const TextStyle(
-                  fontFamily: 'Pacifico',
-                  fontSize: 50,
+                style: GoogleFonts.pacifico(
+                  fontSize: 64,
                   fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor, // Usar a cor primária do tema
                 ),
               ),
-              const SizedBox(height: 20),
-              const Text(
-                'Compartilhe momentos do seu dia a dia com o mundo',
+              const SizedBox(height: 32),
+              // Descrição do aplicativo
+              Text(
+                'Capture e compartilhe os momentos do seu dia a dia com a comunidade Sajin.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
+                  color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.7),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 64),
+              // Botão de Login
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -45,7 +49,8 @@ class EntryScreen extends StatelessWidget {
                   child: const Text('Login'),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
+              // Botão de Registrar
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
@@ -58,7 +63,6 @@ class EntryScreen extends StatelessWidget {
                   child: const Text('Registrar'),
                 ),
               ),
-              const SizedBox(height: 20),
             ],
           ),
         ),

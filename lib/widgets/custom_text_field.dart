@@ -12,6 +12,7 @@ class CustomTextField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters; // Novo parâmetro para máscaras
   final VoidCallback? onTap; // Novo parâmetro para o evento de toque
   final bool readOnly; // Novo parâmetro para tornar o campo somente leitura
+  final bool? enabled; // Adicionado o parâmetro 'enabled'
 
   const CustomTextField({
     super.key,
@@ -25,6 +26,7 @@ class CustomTextField extends StatelessWidget {
     this.inputFormatters, // Adicionado ao construtor
     this.onTap, // Adicionado ao construtor
     this.readOnly = false, // Adicionado ao construtor
+    this.enabled, // Adicionado ao construtor
   });
 
   @override
@@ -40,6 +42,7 @@ class CustomTextField extends StatelessWidget {
         inputFormatters: inputFormatters, // Aplicando os formatadores de entrada
         onTap: onTap, // Aplicando o callback de toque
         readOnly: readOnly, // Aplicando o modo somente leitura
+        enabled: enabled, // Aplicando o parâmetro 'enabled'
         decoration: InputDecoration(
           labelText: labelText,
           suffixIcon: suffixIcon,
