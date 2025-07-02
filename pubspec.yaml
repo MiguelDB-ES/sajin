@@ -1,0 +1,30 @@
+name: sajin
+description: Um aplicativo de fotos para compartilhar o dia a dia.
+publish_to: 'none' # Impede a publicação acidental para pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  google_fonts: ^6.2.1 # Já inclui Pacifico e outras fontes do Google
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  image_picker: ^1.0.4
+  intl: ^0.18.1
+  provider: ^6.1.1
+  cached_network_image: ^3.3.0
+  # Dependência para ícones, caso precise de mais opções além dos Material Icons
+  font_awesome_flutter: ^10.7.0 
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
