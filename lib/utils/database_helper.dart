@@ -27,7 +27,7 @@ class DatabaseHelper {
   }
 
   Future _createDB(Database db, int version) async {
-    // Cria a tabela de usuários
+    // Cria a tabela de utilizadores
     await db.execute('''
       CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,7 +43,7 @@ class DatabaseHelper {
     ''');
 
     // Cria a tabela de posts
-    // ALTERADO: imagePath para imagePaths TEXT NOT NULL
+    // ALTERADO: Adicionado isVideo INTEGER NOT NULL DEFAULT 0
     await db.execute('''
       CREATE TABLE posts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,6 +51,7 @@ class DatabaseHelper {
         imagePaths TEXT NOT NULL,
         description TEXT,
         postDate TEXT NOT NULL,
+        isVideo INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
       )
     ''');
@@ -68,7 +69,7 @@ class DatabaseHelper {
       )
     ''');
 
-    // Cria a tabela de posts salvos
+    // Cria a tabela de posts guardados
     await db.execute('''
       CREATE TABLE saved_posts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -81,10 +82,10 @@ class DatabaseHelper {
     ''');
   }
 
-  // Métodos CRUD para Usuários
+  // Métodos CRUD para Utilizadores
   Future<int> createUser(User user) async {
     final db = await instance.database;
-    return await db.insert('users', user.toMap()); // Insere um novo usuário
+    return await db.insert('users', user.toMap()); // Insere um novo utilizador
   }
 
   Future<User?> getUserByEmail(String email) async {
@@ -97,7 +98,7 @@ class DatabaseHelper {
     );
 
     if (maps.isNotEmpty) {
-      return User.fromMap(maps.first); // Retorna o usuário se encontrado
+      return User.fromMap(maps.first); // Retorna o utilizador se encontrado
     } else {
       return null;
     }
@@ -113,7 +114,7 @@ class DatabaseHelper {
     );
 
     if (maps.isNotEmpty) {
-      return User.fromMap(maps.first); // Retorna o usuário se encontrado
+      return User.fromMap(maps.first); // Retorna o utilizador se encontrado
     } else {
       return null;
     }
@@ -129,7 +130,7 @@ class DatabaseHelper {
     );
 
     if (maps.isNotEmpty) {
-      return User.fromMap(maps.first); // Retorna o usuário se encontrado
+      return User.fromMap(maps.first); // Retorna o utilizador se encontrado
     } else {
       return null;
     }
@@ -138,7 +139,7 @@ class DatabaseHelper {
   Future<List<User>> getAllUsers() async {
     final db = await instance.database;
     final result = await db.query('users');
-    return result.map((json) => User.fromMap(json)).toList(); // Retorna todos os usuários
+    return result.map((json) => User.fromMap(json)).toList(); // Retorna todos os utilizadores
   }
 
   Future<int> updateUser(User user) async {
@@ -148,7 +149,7 @@ class DatabaseHelper {
       user.toMap(),
       where: '${UserFields.id} = ?',
       whereArgs: [user.id],
-    ); // Atualiza um usuário existente
+    ); // Atualiza um utilizador existente
   }
 
   Future<int> deleteUser(int id) async {
@@ -157,45 +158,42 @@ class DatabaseHelper {
       'users',
       where: '${UserFields.id} = ?',
       whereArgs: [id],
-    ); // Deleta um usuário
+    ); // Apaga um utilizador
   }
 
   // Métodos CRUD para Posts
   Future<int> createPost(Post post) async {
     final db = await instance.database;
-    // O método toMap() do Post agora já converte imagePaths para JSON
+    // O método toMap() do Post agora já converte imagePaths para JSON e isVideo para int
     return await db.insert('posts', post.toMap()); // Insere um novo post
   }
 
   Future<List<Post>> getAllPosts() async {
     final db = await instance.database;
-    // Corrigido para usar PostFields.postDate
     final result = await db.query('posts', orderBy: '${PostFields.postDate} DESC');
-    // O método fromMap() do Post agora já converte a string JSON de imagePaths para List<String>
+    // O método fromMap() do Post agora já converte a string JSON de imagePaths para List<String> e isVideo para bool
     return result.map((json) => Post.fromMap(json)).toList(); // Retorna todos os posts
   }
 
   Future<List<Post>> getPostsByUserId(int userId) async {
     final db = await instance.database;
-    // Corrigido para usar PostFields.userId e PostFields.postDate
     final result = await db.query(
       'posts',
       where: '${PostFields.userId} = ?',
       whereArgs: [userId],
       orderBy: '${PostFields.postDate} DESC',
     );
-    // O método fromMap() do Post agora já converte a string JSON de imagePaths para List<String>
-    return result.map((json) => Post.fromMap(json)).toList(); // Retorna posts de um usuário específico
+    // O método fromMap() do Post agora já converte a string JSON de imagePaths para List<String> e isVideo para bool
+    return result.map((json) => Post.fromMap(json)).toList(); // Retorna posts de um utilizador específico
   }
 
   Future<int> deletePost(int id) async {
     final db = await instance.database;
-    // Corrigido para usar PostFields.id
     return await db.delete(
       'posts',
       where: '${PostFields.id} = ?',
       whereArgs: [id],
-    ); // Deleta um post
+    ); // Apaga um post
   }
 
   // Métodos CRUD para Comentários
@@ -206,7 +204,7 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getCommentsForPost(int postId) async {
     final db = await instance.database;
-    // Retorna comentários para um post específico, juntando com informações do usuário
+    // Retorna comentários para um post específico, juntando com informações do utilizador
     return await db.rawQuery('''
       SELECT comments.*, users.username, users.profilePicture
       FROM comments
@@ -222,20 +220,20 @@ class DatabaseHelper {
       'comments',
       where: 'id = ?',
       whereArgs: [commentId],
-    ); // Deleta um comentário
+    ); // Apaga um comentário
   }
 
-  // Métodos CRUD para Posts Salvos
+  // Métodos CRUD para Posts Guardados
   Future<int> savePost(int userId, int postId) async {
     final db = await instance.database;
     try {
       return await db.insert(
         'saved_posts',
         {'userId': userId, 'postId': postId},
-        conflictAlgorithm: ConflictAlgorithm.ignore, // Ignora se o post já estiver salvo
+        conflictAlgorithm: ConflictAlgorithm.ignore, // Ignora se o post já estiver guardado
       );
     } catch (e) {
-      print('Erro ao salvar post: $e');
+      print('Erro ao guardar post: $e');
       return -1; // Retorna -1 em caso de erro
     }
   }
@@ -246,7 +244,7 @@ class DatabaseHelper {
       'saved_posts',
       where: 'userId = ? AND postId = ?',
       whereArgs: [userId, postId],
-    ); // Desfaz o salvamento de um post
+    ); // Desfaz o guardar de um post
   }
 
   Future<List<Post>> getSavedPosts(int userId) async {
@@ -257,8 +255,8 @@ class DatabaseHelper {
       WHERE saved_posts.userId = ?
       ORDER BY posts.postDate DESC
     ''', [userId]);
-    // O método fromMap() do Post agora já converte a string JSON de imagePaths para List<String>
-    return result.map((json) => Post.fromMap(json)).toList(); // Retorna posts salvos por um usuário
+    // O método fromMap() do Post agora já converte a string JSON de imagePaths para List<String> e isVideo para bool
+    return result.map((json) => Post.fromMap(json)).toList(); // Retorna posts guardados por um utilizador
   }
 
   Future<bool> isPostSaved(int userId, int postId) async {
@@ -268,7 +266,7 @@ class DatabaseHelper {
       where: 'userId = ? AND postId = ?',
       whereArgs: [userId, postId],
     );
-    return result.isNotEmpty; // Retorna true se o post estiver salvo
+    return result.isNotEmpty; // Retorna true se o post estiver guardado
   }
 
   // Fechar o banco de dados

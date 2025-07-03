@@ -19,7 +19,9 @@ dependencies:
   provider: ^6.1.1
   cached_network_image: ^3.3.0
   font_awesome_flutter: ^10.7.0
-  shimmer: ^3.0.0 # Adicionado para os efeitos de brilho
+  shimmer: ^3.0.0
+  video_player: ^2.8.1 # Adicionado para reprodução de vídeo
+  chewie: ^1.7.5 # Adicionado para controles de vídeo aprimorados
 
 dev_dependencies:
   flutter_test:

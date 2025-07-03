@@ -1,13 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:sajin/models/post.dart'; // Importação direta do modelo Post
+import 'package:sajin/models/post.dart';
 import 'package:sajin/models/user.dart';
 import 'package:sajin/utils/database_helper.dart';
 import 'package:sajin/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:video_player/video_player.dart'; // Importar para reprodução de vídeo
+import 'package:chewie/chewie.dart'; // Importar para controles de vídeo
 
 class PostCard extends StatefulWidget {
   final Post post;
@@ -36,26 +38,63 @@ class _PostCardState extends State<PostCard> {
   final PageController _imagePageController = PageController(); // Controlador para as imagens do post
   int _currentImagePage = 0; // Índice da imagem atual no carrossel
 
+  VideoPlayerController? _videoPlayerController;
+  ChewieController? _chewieController;
+
   @override
   void initState() {
     super.initState();
     _loadPostUserAndSavedStatus();
     _loadComments();
-    _imagePageController.addListener(() {
-      setState(() {
-        _currentImagePage = _imagePageController.page!.round();
+    if (widget.post.isVideo && widget.post.imagePaths.isNotEmpty) {
+      _initializeVideoPlayer(widget.post.imagePaths.first);
+    } else {
+      _imagePageController.addListener(() {
+        if (_imagePageController.page != null) {
+          setState(() {
+            _currentImagePage = _imagePageController.page!.round();
+          });
+        }
       });
-    });
+    }
   }
 
   @override
   void dispose() {
     _imagePageController.dispose();
+    _videoPlayerController?.dispose();
+    _chewieController?.dispose();
     super.dispose();
   }
 
+  // Inicializa o controlador de vídeo
+  Future<void> _initializeVideoPlayer(String videoPath) async {
+    _videoPlayerController = VideoPlayerController.file(File(videoPath));
+    await _videoPlayerController!.initialize();
+    _chewieController = ChewieController(
+      videoPlayerController: _videoPlayerController!,
+      autoPlay: false, // Não reproduzir automaticamente no feed
+      looping: false,
+      allowFullScreen: true,
+      showOptions: false,
+      showControls: true, // Mostra os controles de reprodução
+      materialProgressColors: ChewieProgressColors(
+        playedColor: Theme.of(context).primaryColor,
+        handleColor: Theme.of(context).primaryColor,
+        backgroundColor: Colors.grey,
+        bufferedColor: Colors.white,
+      ),
+      placeholder: Container(
+        color: Theme.of(context).cardColor.withOpacity(0.5),
+        child: Center(
+          child: Icon(Icons.videocam_rounded, size: 60, color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.4)),
+        ),
+      ),
+    );
+    setState(() {}); // Força a reconstrução para exibir o vídeo
+  }
+
   Future<void> _loadPostUserAndSavedStatus() async {
-    // Mover a chamada do Provider para antes do await
     final authService = Provider.of<AuthService>(context, listen: false);
 
     if (widget.postUser != null) {
@@ -377,8 +416,65 @@ class _PostCardState extends State<PostCard> {
                     ],
                   ),
                 ),
-                // Exibe as imagens do post com PageView e indicadores
-                if (widget.post.imagePaths.isNotEmpty)
+                // Exibe o vídeo ou as imagens do post
+                if (widget.post.isVideo && widget.post.imagePaths.isNotEmpty)
+                  GestureDetector(
+                    onTap: () {
+                      // Navegar para a tela de vídeo em tela cheia
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (BuildContext context) {
+                            return Scaffold(
+                              backgroundColor: Colors.black,
+                              appBar: AppBar(
+                                backgroundColor: Colors.black,
+                                iconTheme: const IconThemeData(color: Colors.white),
+                                leading: IconButton(
+                                  icon: const Icon(Icons.close),
+                                  onPressed: () => Navigator.of(context).pop(),
+                                ),
+                              ),
+                              body: Center(
+                                child: _chewieController != null
+                                    ? Chewie(
+                                        controller: ChewieController(
+                                          videoPlayerController: _videoPlayerController!,
+                                          autoPlay: true, // Reproduzir automaticamente em tela cheia
+                                          looping: false,
+                                          allowFullScreen: true,
+                                          showOptions: true,
+                                          showControls: true,
+                                          materialProgressColors: ChewieProgressColors(
+                                            playedColor: Theme.of(context).primaryColor,
+                                            handleColor: Theme.of(context).primaryColor,
+                                            backgroundColor: Colors.grey,
+                                            bufferedColor: Colors.white,
+                                          ),
+                                        ),
+                                      )
+                                    : const CircularProgressIndicator(),
+                              ),
+                            );
+                          },
+                          fullscreenDialog: true,
+                        ),
+                      );
+                    },
+                    child: SizedBox(
+                      height: 280, // Altura para o preview do vídeo
+                      child: _chewieController != null && _chewieController!.videoPlayerController.value.isInitialized
+                          ? Chewie(
+                              controller: _chewieController!,
+                            )
+                          : Container(
+                              color: Theme.of(context).cardColor.withOpacity(0.5),
+                              child: Center(
+                                child: Icon(Icons.videocam_rounded, size: 60, color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.4)),
+                              ),
+                            ),
+                    ),
+                  )
+                else if (widget.post.imagePaths.isNotEmpty)
                   Stack(
                     alignment: Alignment.bottomCenter,
                     children: [
@@ -468,7 +564,7 @@ class _PostCardState extends State<PostCard> {
                     ],
                   )
                 else
-                  // Placeholder se não houver imagens
+                  // Placeholder se não houver imagens nem vídeos
                   Container(
                     width: double.infinity,
                     height: 280,
@@ -561,7 +657,7 @@ class _PostCardState extends State<PostCard> {
                       ..._buildCommentsSection(currentUser),
                     ],
                   ),
-                ), // Adicionada vírgula aqui
+                ),
               ],
             ),
           ),
