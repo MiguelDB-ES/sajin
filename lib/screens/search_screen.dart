@@ -3,6 +3,8 @@ import 'package:sajin/models/post.dart';
 import 'package:sajin/models/user.dart';
 import 'package:sajin/utils/database_helper.dart';
 import 'package:sajin/widgets/post_card.dart';
+import 'package:shimmer/shimmer.dart'; // Importação do pacote shimmer
+import 'package:google_fonts/google_fonts.dart'; // Importação para usar GoogleFonts
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -28,6 +30,7 @@ class _SearchScreenState extends State<SearchScreen> {
       setState(() {
         _searchResults = [];
         _hasSearched = true;
+        _isSearching = false; // Garante que o shimmer pare se a busca for vazia
       });
       return;
     }
@@ -36,6 +39,9 @@ class _SearchScreenState extends State<SearchScreen> {
       _isSearching = true; // Ativa o indicador de pesquisa
       _hasSearched = true;
     });
+
+    // Simula um atraso para ver o shimmer effect
+    await Future.delayed(const Duration(seconds: 1));
 
     final dbHelper = DatabaseHelper.instance;
     final allPosts = await dbHelper.getAllPosts(); // Busca todos os posts
@@ -75,6 +81,138 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  // Widget de placeholder para o PostCard (Shimmer Effect)
+  Widget _buildShimmerPostCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor, // Cor de fundo do card
+        borderRadius: BorderRadius.circular(20.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: CircleAvatar(
+                    radius: 24,
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 12.0),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          width: 120,
+                          height: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          width: 80,
+                          height: 12,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              width: double.infinity,
+              height: 280,
+              color: Colors.white,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    width: double.infinity,
+                    height: 14,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    width: 150,
+                    height: 14,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 12.0),
+                Row(
+                  children: [
+                    Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        width: 80,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        width: 100,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -85,7 +223,7 @@ class _SearchScreenState extends State<SearchScreen> {
           TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText: 'Buscar por descrição ou nome de usuário...',
+              hintText: 'Buscar por descrição ou nome de utilizador...',
               prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.0),
@@ -105,7 +243,12 @@ class _SearchScreenState extends State<SearchScreen> {
           const SizedBox(height: 16),
           // Exibe o indicador de carregamento ou os resultados
           _isSearching
-              ? const Expanded(child: Center(child: CircularProgressIndicator()))
+              ? Expanded(
+                  child: ListView.builder(
+                    itemCount: 3, // Exibe 3 shimmer cards enquanto carrega
+                    itemBuilder: (context, index) => _buildShimmerPostCard(),
+                  ),
+                )
               : _hasSearched && _searchResults.isEmpty
                   ? Expanded(
                       child: Center(
@@ -117,7 +260,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             Text(
                               'Nenhum resultado encontrado para "${_searchController.text}".',
                               textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                              style: GoogleFonts.inter(fontSize: 18, color: Colors.grey[600]),
                             ),
                           ],
                         ),

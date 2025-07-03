@@ -5,6 +5,7 @@ import 'package:sajin/models/user.dart';
 import 'package:sajin/services/auth_service.dart';
 import 'package:sajin/widgets/custom_text_field.dart';
 import 'package:sajin/screens/login_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -30,6 +31,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
       initialDate: DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Theme.of(context).primaryColor, // Cor primária do tema
+              onPrimary: Theme.of(context).cardColor, // Cor do texto na cor primária
+              onSurface: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black, // Cor do texto no calendário
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).primaryColor, // Cor dos botões de texto
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
       setState(() {
@@ -105,7 +123,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Text(
                   'Crie sua conta no Sajin!',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).textTheme.bodyLarge?.color,
@@ -113,15 +131,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Preencha os campos abaixo para se juntar à nossa comunidade.',
+                  'Junte-se à nossa comunidade e compartilhe seus momentos.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 16,
                     color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.7),
                   ),
                 ),
                 const SizedBox(height: 32),
-                // Campo de nome completo
+                // Campo Nome Completo
                 CustomTextField(
                   controller: _fullNameController,
                   labelText: 'Nome Completo',
@@ -133,7 +151,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                // Campo de email
+                // Campo Nome de Usuário
+                CustomTextField(
+                  controller: _usernameController,
+                  labelText: 'Nome de Usuário',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor, insira um nome de usuário.';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                // Campo Email
                 CustomTextField(
                   controller: _emailController,
                   labelText: 'Email',
@@ -149,7 +179,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                // Campo de senha
+                // Campo Senha
                 CustomTextField(
                   controller: _passwordController,
                   labelText: 'Senha',
@@ -165,7 +195,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                // Campo de confirmar senha
+                // Campo Confirmar Senha
                 CustomTextField(
                   controller: _confirmPasswordController,
                   labelText: 'Confirmar Senha',
@@ -181,36 +211,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                // Campo de data de nascimento
+                // Campo Data de Nascimento
                 CustomTextField(
                   controller: _dateOfBirthController,
                   labelText: 'Data de Nascimento',
                   keyboardType: TextInputType.datetime,
-                  readOnly: true, // Impede a edição direta
-                  onTap: () => _selectDate(context), // Abre o seletor de data
+                  readOnly: true, // Impede a edição manual
+                  onTap: () => _selectDate(context),
+                  suffixIcon: const Icon(Icons.calendar_today),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Por favor, insira sua data de nascimento.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                // Campo de nome de usuário
-                CustomTextField(
-                  controller: _usernameController,
-                  labelText: 'Nome de Usuário',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, insira um nome de usuário.';
+                      return 'Por favor, selecione sua data de nascimento.';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 32),
-                // Botão de Criar Conta
+                // Botão de Registrar
                 _isLoading
-                    ? const CircularProgressIndicator() // Indicador de carregamento
+                    ? const CircularProgressIndicator()
                     : SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -222,14 +241,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Redirecionamento para Login
                 TextButton(
                   onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    );
+                    Navigator.pop(context); // Volta para a tela de login
                   },
                   child: const Text(
-                    'Já tem uma conta? Faça login aqui.',
-                    style: TextStyle(color: Colors.blue),
+                    'Já tem uma conta? Faça login.',
                   ),
                 ),
               ],

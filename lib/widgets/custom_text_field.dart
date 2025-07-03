@@ -54,6 +54,8 @@ class CustomTextField extends StatelessWidget {
           fillColor: Theme.of(context).inputDecorationTheme.fillColor,
           focusedBorder: Theme.of(context).inputDecorationTheme.focusedBorder,
           enabledBorder: Theme.of(context).inputDecorationTheme.enabledBorder,
+          labelStyle: Theme.of(context).inputDecorationTheme.labelStyle,
+          hintStyle: Theme.of(context).inputDecorationTheme.hintStyle,
         ),
       ),
     );

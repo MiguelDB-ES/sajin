@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sajin/screens/entry_screen.dart';
-import 'package:sajin/utils/app_theme.dart'; // Importação correta do AppTheme
+import 'package:sajin/utils/app_theme.dart';
 import 'package:sajin/utils/database_helper.dart';
 import 'package:sajin/services/auth_service.dart';
-import 'package:sajin/utils/app_constants.dart'; // Importar AppConstants
+import 'package:sajin/utils/app_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Inicializa o banco de dados ao iniciar o aplicativo
-  await DatabaseHelper.instance.database; 
+  await DatabaseHelper.instance.database;
   runApp(
     MultiProvider(
       providers: [
@@ -27,49 +26,59 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Escuta as mudanças no tema para reconstruir o MaterialApp
-    final appTheme = Provider.of<AppTheme>(context); 
+    final appTheme = Provider.of<AppTheme>(context);
+
+    // Novas cores base para o design verde
+    const Color primaryGreenLight = Color(0xFF4CAF50); // Um verde vibrante para o tema claro
+    const Color primaryGreenDark = Color(0xFF047857); // Um verde mais escuro para o tema escuro
+    const Color darkBackground = Color(0xFF121212); // Fundo quase preto
+    const Color darkSurface = Color(0xFF1E1E1E); // Superfície escura (cards, etc.)
+    const Color lightBackground = Colors.white; // Fundo branco
+    const Color lightSurface = Colors.white; // Superfície clara (cards, etc.)
+    const Color lightText = Colors.white; // Texto claro
+    const Color darkText = Colors.black; // Texto escuro
 
     return MaterialApp(
-      title: AppConstants.appName, // Usando o nome do app dos constantes
+      title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
-      themeMode: appTheme.themeMode, // Usa o themeMode do AppTheme
-      
-      // Tema Claro (Light Theme) - Inspirado nos layouts claros com toques de verde
+      themeMode: appTheme.themeMode,
+
+      // Tema Claro (Light Theme) - Agora com tons de verde
       theme: ThemeData(
-        primarySwatch: Colors.blue, // Manter um primarySwatch para tons de azul
+        primarySwatch: Colors.green, // Alterado para green
+        primaryColor: primaryGreenLight, // Usar o verde vibrante como cor primária
         brightness: Brightness.light,
-        scaffoldBackgroundColor: Colors.white, // Fundo branco
-        cardColor: Colors.white, // Cards brancos
+        scaffoldBackgroundColor: lightBackground,
+        cardColor: lightSurface,
         textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme)
-            .apply(bodyColor: Colors.grey[800], displayColor: Colors.grey[900]), // Textos escuros
+            .apply(bodyColor: darkText, displayColor: darkText),
         appBarTheme: AppBarTheme(
-          backgroundColor: Colors.white, // AppBar branca
-          foregroundColor: Colors.grey[900], // Ícones e texto da AppBar escuros
-          elevation: 0, // Sem sombra na AppBar
+          backgroundColor: lightBackground,
+          foregroundColor: darkText,
+          elevation: 0,
           centerTitle: true,
           titleTextStyle: GoogleFonts.inter(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.grey[900],
+            color: darkText,
           ),
         ),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Colors.white,
-          selectedItemColor: Color(0xFF4CAF50), // Verde mais vibrante para seleção
+          backgroundColor: lightSurface,
+          selectedItemColor: primaryGreenLight, // Verde vibrante para seleção
           unselectedItemColor: Colors.grey,
-          elevation: 8, // Sombra sutil na barra de navegação
+          elevation: 8,
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.grey[100], // Fundo de campo levemente cinza
+          fillColor: Colors.grey[100],
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.0),
             borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.0),
-            borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2.0), // Borda verde no foco
+            borderSide: const BorderSide(color: primaryGreenLight, width: 2.0), // Borda verde no foco
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.0),
@@ -80,8 +89,8 @@ class MyApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF4CAF50), // Botões em verde
-            foregroundColor: Colors.white,
+            backgroundColor: primaryGreenLight, // Botões em verde vibrante
+            foregroundColor: lightText,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.0),
             ),
@@ -91,8 +100,8 @@ class MyApp extends StatelessWidget {
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xFF4CAF50), // Texto e borda em verde
-            side: const BorderSide(color: Color(0xFF4CAF50)),
+            foregroundColor: primaryGreenLight, // Texto e borda em verde vibrante
+            side: const BorderSide(color: primaryGreenLight),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.0),
             ),
@@ -102,46 +111,47 @@ class MyApp extends StatelessWidget {
         ),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
-            foregroundColor: Colors.blueGrey[700], // TextButtons em tom de cinza/azul
+            foregroundColor: primaryGreenLight, // TextButtons em verde vibrante
           ),
         ),
       ),
-      
-      // Tema Escuro (Dark Theme) - Inspirado nos layouts escuros com toques de verde
+
+      // Tema Escuro (Dark Theme) - Agora com tons de verde
       darkTheme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.green, // Alterado para green
+        primaryColor: primaryGreenDark, // Usar o verde escuro como cor primária no dark mode
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF1A202C), // Fundo bem escuro
-        cardColor: const Color(0xFF2D3748), // Cards um pouco mais claros que o fundo
+        scaffoldBackgroundColor: darkBackground,
+        cardColor: darkSurface,
         textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme)
-            .apply(bodyColor: Colors.grey[200], displayColor: Colors.white), // Textos claros
+            .apply(bodyColor: lightText, displayColor: lightText),
         appBarTheme: AppBarTheme(
-          backgroundColor: const Color(0xFF2D3748), // AppBar escura
-          foregroundColor: Colors.white, // Ícones e texto da AppBar claros
-          elevation: 0, // Sem sombra na AppBar
+          backgroundColor: darkSurface,
+          foregroundColor: lightText,
+          elevation: 0,
           centerTitle: true,
           titleTextStyle: GoogleFonts.inter(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: lightText,
           ),
         ),
         bottomNavigationBarTheme: BottomNavigationBarThemeData(
-          backgroundColor: const Color(0xFF2D3748),
-          selectedItemColor: const Color(0xFF68D391), // Verde mais claro para seleção
+          backgroundColor: darkSurface,
+          selectedItemColor: primaryGreenDark, // Verde escuro para seleção
           unselectedItemColor: Colors.grey[400],
-          elevation: 8, // Sombra sutil
+          elevation: 8,
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: const Color(0xFF4A5568), // Fundo de campo escuro
+          fillColor: const Color(0xFF2D2D2D), // Fundo de campo escuro
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.0),
             borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.0),
-            borderSide: const BorderSide(color: Color(0xFF68D391), width: 2.0), // Borda verde no foco
+            borderSide: const BorderSide(color: primaryGreenDark, width: 2.0), // Borda verde no foco
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.0),
@@ -152,8 +162,8 @@ class MyApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF68D391), // Botões em verde claro
-            foregroundColor: Colors.black, // Texto preto para contraste
+            backgroundColor: primaryGreenDark, // Botões em verde escuro
+            foregroundColor: darkText, // Texto escuro para contraste
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.0),
             ),
@@ -163,8 +173,8 @@ class MyApp extends StatelessWidget {
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xFF68D391), // Texto e borda em verde claro
-            side: const BorderSide(color: Color(0xFF68D391)),
+            foregroundColor: primaryGreenDark, // Texto e borda em verde escuro
+            side: const BorderSide(color: primaryGreenDark),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.0),
             ),
@@ -174,11 +184,11 @@ class MyApp extends StatelessWidget {
         ),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
-            foregroundColor: Colors.grey[300], // TextButtons em tons de cinza claro
+            foregroundColor: primaryGreenDark, // TextButtons em verde escuro
           ),
         ),
       ),
-      home: const EntryScreen(), // Define a tela de entrada como a tela inicial
+      home: const EntryScreen(),
     );
   }
 }

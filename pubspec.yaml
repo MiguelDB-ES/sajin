@@ -18,8 +18,8 @@ dependencies:
   intl: ^0.18.1
   provider: ^6.1.1
   cached_network_image: ^3.3.0
-  # Dependência para ícones, caso precise de mais opções além dos Material Icons
-  font_awesome_flutter: ^10.7.0 
+  font_awesome_flutter: ^10.7.0
+  shimmer: ^3.0.0 # Adicionado para os efeitos de brilho
 
 dev_dependencies:
   flutter_test:
@@ -28,3 +28,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Adicione assets aqui se tiver imagens ou outros arquivos
+  # assets:
+  #   - assets/images/

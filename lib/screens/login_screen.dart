@@ -6,6 +6,7 @@ import 'package:sajin/screens/home_screen.dart';
 import 'package:sajin/screens/register_screen.dart';
 import 'package:sajin/screens/admin/admin_dashboard_screen.dart';
 import 'package:sajin/utils/app_constants.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -36,6 +37,21 @@ class _LoginScreenState extends State<LoginScreen> {
           // Tenta logar como admin
           final adminUser = await authService.loginAdmin();
           if (adminUser != null) {
+            // Exibe a notificação de boas-vindas para o admin
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Bem-vindo ao Painel Administrativo!',
+                  style: GoogleFonts.inter(color: Colors.white),
+                ),
+                backgroundColor: Theme.of(context).primaryColor,
+                duration: const Duration(seconds: 3),
+                behavior: SnackBarBehavior.floating, // Para ser mais visível
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                margin: const EdgeInsets.all(10),
+              ),
+            );
+            // Navega para o painel administrativo
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
@@ -92,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   'Bem-vindo de volta!',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).textTheme.bodyLarge?.color,
@@ -102,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   'Faça login para continuar explorando os momentos do dia a dia.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 16,
                     color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.7),
                   ),
@@ -158,7 +174,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                   child: const Text(
                     'Não tem uma conta? Registre-se aqui.',
-                    style: TextStyle(color: Colors.blue),
                   ),
                 ),
               ],

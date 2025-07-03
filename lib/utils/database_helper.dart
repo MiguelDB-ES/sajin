@@ -43,11 +43,12 @@ class DatabaseHelper {
     ''');
 
     // Cria a tabela de posts
+    // ALTERADO: imagePath para imagePaths TEXT NOT NULL
     await db.execute('''
       CREATE TABLE posts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         userId INTEGER NOT NULL,
-        imagePath TEXT NOT NULL,
+        imagePaths TEXT NOT NULL,
         description TEXT,
         postDate TEXT NOT NULL,
         FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
@@ -162,6 +163,7 @@ class DatabaseHelper {
   // Métodos CRUD para Posts
   Future<int> createPost(Post post) async {
     final db = await instance.database;
+    // O método toMap() do Post agora já converte imagePaths para JSON
     return await db.insert('posts', post.toMap()); // Insere um novo post
   }
 
@@ -169,6 +171,7 @@ class DatabaseHelper {
     final db = await instance.database;
     // Corrigido para usar PostFields.postDate
     final result = await db.query('posts', orderBy: '${PostFields.postDate} DESC');
+    // O método fromMap() do Post agora já converte a string JSON de imagePaths para List<String>
     return result.map((json) => Post.fromMap(json)).toList(); // Retorna todos os posts
   }
 
@@ -181,6 +184,7 @@ class DatabaseHelper {
       whereArgs: [userId],
       orderBy: '${PostFields.postDate} DESC',
     );
+    // O método fromMap() do Post agora já converte a string JSON de imagePaths para List<String>
     return result.map((json) => Post.fromMap(json)).toList(); // Retorna posts de um usuário específico
   }
 
@@ -253,6 +257,7 @@ class DatabaseHelper {
       WHERE saved_posts.userId = ?
       ORDER BY posts.postDate DESC
     ''', [userId]);
+    // O método fromMap() do Post agora já converte a string JSON de imagePaths para List<String>
     return result.map((json) => Post.fromMap(json)).toList(); // Retorna posts salvos por um usuário
   }
 

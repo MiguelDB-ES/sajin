@@ -7,9 +7,10 @@ import 'package:sajin/services/image_picker_service.dart';
 import 'package:sajin/utils/database_helper.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
+import 'package:google_fonts/google_fonts.dart';
 
 class AddPhotoScreen extends StatefulWidget {
-  final VoidCallback? onPostAdded; // Callback para notificar a adição de um post
+  final VoidCallback? onPostAdded;
 
   const AddPhotoScreen({super.key, this.onPostAdded});
 
@@ -20,23 +21,43 @@ class AddPhotoScreen extends StatefulWidget {
 class _AddPhotoScreenState extends State<AddPhotoScreen> {
   final ImagePickerService _imagePickerService = ImagePickerService();
   final TextEditingController _descriptionController = TextEditingController();
-  File? _selectedImage; // Imagem selecionada
+  List<File> _selectedImages = []; // Alterado para lista de File
   bool _isLoading = false; // Estado de carregamento
+  final PageController _pageController = PageController(); // Controlador para o PageView
+  int _currentPage = 0; // Índice da página atual no PageView
 
-  // Seleciona uma imagem da galeria
-  Future<void> _pickImage() async {
-    final image = await _imagePickerService.pickImageFromGallery();
-    if (image != null) {
+  @override
+  void initState() {
+    super.initState();
+    _pageController.addListener(() {
       setState(() {
-        _selectedImage = image;
+        _currentPage = _pageController.page!.round();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  // Seleciona múltiplas imagens da galeria
+  Future<void> _pickImages() async {
+    final List<XFile>? images = await ImagePicker().pickMultiImage(); // Usar pickMultiImage
+    if (images != null && images.isNotEmpty) {
+      setState(() {
+        _selectedImages = images.map((xFile) => File(xFile.path)).toList();
+        _currentPage = 0; // Resetar para a primeira imagem ao selecionar novas
+        _pageController.jumpToPage(0); // Pular para a primeira página
       });
     }
   }
 
   // Publica a imagem
   Future<void> _publishPost() async {
-    if (_selectedImage == null) {
-      _showSnackBar('Por favor, selecione uma imagem para publicar.');
+    if (_selectedImages.isEmpty) { // Verificar se a lista de imagens está vazia
+      _showSnackBar('Por favor, selecione pelo menos uma imagem para publicar.');
       return;
     }
 
@@ -56,34 +77,36 @@ class _AddPhotoScreenState extends State<AddPhotoScreen> {
     }
 
     try {
-      // Salva a imagem localmente
-      final savedImagePath = await _imagePickerService.saveImageLocally(_selectedImage!);
-      if (savedImagePath == null) {
-        _showSnackBar('Erro ao salvar a imagem localmente.');
-        return;
+      List<String> savedImagePaths = [];
+      for (File image in _selectedImages) {
+        final savedPath = await _imagePickerService.saveImageLocally(image);
+        if (savedPath == null) {
+          _showSnackBar('Erro ao salvar uma das imagens localmente.');
+          return;
+        }
+        savedImagePaths.add(savedPath);
       }
 
-      // Cria o objeto Post
+      // Cria o objeto Post com a lista de caminhos de imagem
       final newPost = Post(
         userId: currentUser.id!,
-        imagePath: savedImagePath,
+        imagePaths: savedImagePaths, // Passar a lista de caminhos
         description: _descriptionController.text.trim(),
         postDate: DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now()),
-        // Removidos userImage e username daqui, pois são preenchidos ao carregar o post
-        // e não são campos diretos de criação do Post no banco de dados.
       );
 
       // Salva o post no banco de dados
-      await DatabaseHelper.instance.createPost(newPost); // Corrigido de insertPost para createPost
+      await DatabaseHelper.instance.createPost(newPost);
 
       _showSnackBar('Postagem publicada com sucesso!');
       _descriptionController.clear();
       setState(() {
-        _selectedImage = null; // Limpa a imagem selecionada
+        _selectedImages = []; // Limpa as imagens selecionadas
+        _currentPage = 0;
       });
 
       if (widget.onPostAdded != null) {
-        widget.onPostAdded!(); // Chama o callback para notificar a adição do post
+        widget.onPostAdded!();
       }
     } catch (e) {
       _showSnackBar('Erro ao publicar postagem: $e');
@@ -103,9 +126,9 @@ class _AddPhotoScreenState extends State<AddPhotoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold( // Adicionado Scaffold aqui
+    return Scaffold(
       appBar: AppBar(
-        title: const Text('Adicionar Foto'),
+        title: const Text('Adicionar Foto(s)'), // Título atualizado
         centerTitle: true,
       ),
       body: Padding(
@@ -114,34 +137,65 @@ class _AddPhotoScreenState extends State<AddPhotoScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Área para exibir a imagem selecionada
+              // Área para exibir as imagens selecionadas (PageView para scroll horizontal)
               GestureDetector(
-                onTap: _pickImage,
+                onTap: _pickImages, // Chama _pickImages para selecionar múltiplas
                 child: Container(
-                  height: 200,
+                  height: 250, // Altura ajustada
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(12.0),
-                    border: Border.all(color: Colors.grey[300]!),
+                    borderRadius: BorderRadius.circular(16.0), // Bordas mais arredondadas
+                    border: Border.all(color: Theme.of(context).primaryColor.withOpacity(0.3), width: 2), // Borda sutil
                   ),
-                  child: _selectedImage != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(12.0),
-                          child: Image.file(
-                            _selectedImage!,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                          ),
+                  child: _selectedImages.isNotEmpty
+                      ? Stack(
+                          alignment: Alignment.bottomCenter,
+                          children: [
+                            PageView.builder(
+                              controller: _pageController,
+                              itemCount: _selectedImages.length,
+                              itemBuilder: (context, index) {
+                                return ClipRRect(
+                                  borderRadius: BorderRadius.circular(16.0),
+                                  child: Image.file(
+                                    _selectedImages[index],
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  ),
+                                );
+                              },
+                            ),
+                            // Indicadores de página
+                            Positioned(
+                              bottom: 10,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(_selectedImages.length, (index) {
+                                  return Container(
+                                    width: 8.0,
+                                    height: 8.0,
+                                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: _currentPage == index
+                                          ? Theme.of(context).primaryColor
+                                          : Colors.grey.withOpacity(0.5),
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ),
+                          ],
                         )
                       : Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.add_a_photo, size: 50, color: Colors.grey[600]),
-                            const SizedBox(height: 8),
+                            Icon(Icons.add_a_photo_rounded, size: 60, color: Theme.of(context).primaryColor.withOpacity(0.7)),
+                            const SizedBox(height: 12),
                             Text(
-                              'Toque para anexar foto',
-                              style: TextStyle(color: Colors.grey[600]),
+                              'Toque para anexar foto(s)', // Texto atualizado
+                              style: GoogleFonts.inter(color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.7), fontSize: 16),
                             ),
                           ],
                         ),
@@ -161,7 +215,10 @@ class _AddPhotoScreenState extends State<AddPhotoScreen> {
                   ),
                   filled: true,
                   fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+                  labelStyle: Theme.of(context).inputDecorationTheme.labelStyle,
+                  hintStyle: Theme.of(context).inputDecorationTheme.hintStyle,
                 ),
+                style: GoogleFonts.inter(color: Theme.of(context).textTheme.bodyLarge?.color),
               ),
               const SizedBox(height: 32),
               // Botão de Publicar

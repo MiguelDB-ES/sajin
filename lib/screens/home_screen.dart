@@ -11,6 +11,8 @@ import 'package:sajin/models/user.dart';
 import 'package:sajin/utils/database_helper.dart';
 import 'package:sajin/services/auth_service.dart';
 import 'dart:io';
+import 'package:shimmer/shimmer.dart'; // Importação do pacote shimmer
+import 'package:google_fonts/google_fonts.dart'; // Importação para usar GoogleFonts
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -47,6 +49,8 @@ class _HomeScreenState extends State<HomeScreen> {
       _isLoading = true;
     });
     try {
+      // Simula um atraso para ver o shimmer effect
+      await Future.delayed(const Duration(seconds: 1));
       final dbHelper = DatabaseHelper.instance;
       final posts = await dbHelper.getAllPosts();
       // Para cada post, busca o usuário correspondente
@@ -75,6 +79,138 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Widget de placeholder para o Shimmer Effect
+  Widget _buildShimmerPostCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor, // Cor de fundo do card
+        borderRadius: BorderRadius.circular(20.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: CircleAvatar(
+                    radius: 24,
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 12.0),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          width: 120,
+                          height: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          width: 80,
+                          height: 12,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              width: double.infinity,
+              height: 280,
+              color: Colors.white,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    width: double.infinity,
+                    height: 14,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    width: 150,
+                    height: 14,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 12.0),
+                Row(
+                  children: [
+                    Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        width: 80,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        width: 100,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Widgets para cada tela da navegação inferior
   Widget _getScreen(int index) {
     switch (index) {
@@ -83,18 +219,21 @@ class _HomeScreenState extends State<HomeScreen> {
         return RefreshIndicator(
           onRefresh: _fetchPosts, // Permite puxar para recarregar
           child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? ListView.builder(
+                  itemCount: 3, // Exibe 3 shimmer cards enquanto carrega
+                  itemBuilder: (context, index) => _buildShimmerPostCard(),
+                )
               : _posts.isEmpty
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.photo_library, size: 80, color: Colors.grey[400]),
+                          Icon(Icons.photo_library, size: 80, color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.4)),
                           const SizedBox(height: 16),
                           Text(
                             'Nenhuma postagem ainda. Seja o primeiro a compartilhar!',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                            style: GoogleFonts.inter(fontSize: 18, color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.6)),
                           ),
                         ],
                       ),
@@ -181,7 +320,7 @@ class _HomeScreenState extends State<HomeScreen> {
             BottomNavigationBarItem(
               icon: CircleAvatar(
                 radius: 12,
-                backgroundColor: Colors.blue,
+                backgroundColor: Theme.of(context).primaryColor, // Usar a cor primária do tema
                 // Exibe a foto de perfil do usuário logado ou a primeira letra do nome
                 backgroundImage: _currentUser?.profilePicture != null && File(_currentUser!.profilePicture!).existsSync()
                     ? FileImage(File(_currentUser!.profilePicture!))
@@ -189,7 +328,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: _currentUser?.profilePicture == null || !File(_currentUser!.profilePicture!).existsSync()
                     ? Text(
                         _currentUser?.username[0].toUpperCase() ?? '?',
-                        style: const TextStyle(color: Colors.white, fontSize: 10),
+                        style: GoogleFonts.inter(color: Colors.white, fontSize: 10), // Usar GoogleFonts
                       )
                     : null,
               ),

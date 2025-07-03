@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sajin/models/user.dart';
 import 'package:sajin/utils/database_helper.dart';
-import 'package:sajin/screens/profile_screen.dart'; // Para navegar para o perfil do usuário
+import 'package:sajin/screens/profile_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ManageProfilesScreen extends StatefulWidget {
   const ManageProfilesScreen({super.key});
@@ -11,10 +12,10 @@ class ManageProfilesScreen extends StatefulWidget {
 }
 
 class _ManageProfilesScreenState extends State<ManageProfilesScreen> {
-  List<User> _allUsers = []; // Todos os usuários
-  List<User> _filteredUsers = []; // Usuários filtrados
-  bool _isLoading = true; // Estado de carregamento
-  final TextEditingController _searchController = TextEditingController(); // Controlador para a busca
+  List<User> _allUsers = [];
+  List<User> _filteredUsers = [];
+  bool _isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -22,7 +23,6 @@ class _ManageProfilesScreenState extends State<ManageProfilesScreen> {
     _fetchUsers();
   }
 
-  // Busca todos os usuários do banco de dados
   Future<void> _fetchUsers() async {
     setState(() {
       _isLoading = true;
@@ -32,7 +32,7 @@ class _ManageProfilesScreenState extends State<ManageProfilesScreen> {
       final users = await dbHelper.getAllUsers();
       setState(() {
         _allUsers = users;
-        _filteredUsers = users; // Inicialmente, todos os usuários são exibidos
+        _filteredUsers = users;
       });
     } catch (e) {
       print('Erro ao carregar usuários: $e');
@@ -46,7 +46,6 @@ class _ManageProfilesScreenState extends State<ManageProfilesScreen> {
     }
   }
 
-  // Filtra os usuários com base na query de busca
   void _filterUsers(String query) {
     final lowerCaseQuery = query.toLowerCase();
     setState(() {
@@ -61,18 +60,16 @@ class _ManageProfilesScreenState extends State<ManageProfilesScreen> {
     });
   }
 
-  // Alterna o status de ativo/inativo de um usuário
   Future<void> _toggleUserStatus(User user) async {
     final dbHelper = DatabaseHelper.instance;
     final updatedUser = user.copy(isActive: !user.isActive);
     await dbHelper.updateUser(updatedUser);
-    _fetchUsers(); // Recarrega a lista de usuários
+    _fetchUsers();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Status de ${user.username} atualizado para ${updatedUser.isActive ? 'Ativo' : 'Inativo'}.')),
     );
   }
 
-  // Deleta um usuário
   void _confirmDeleteUser(User user) {
     showDialog(
       context: context,
@@ -92,7 +89,7 @@ class _ManageProfilesScreenState extends State<ManageProfilesScreen> {
               onPressed: () async {
                 await DatabaseHelper.instance.deleteUser(user.id!);
                 Navigator.of(context).pop();
-                _fetchUsers(); // Recarrega a lista de usuários
+                _fetchUsers();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Usuário ${user.username} excluído com sucesso!')),
                 );
@@ -114,14 +111,16 @@ class _ManageProfilesScreenState extends State<ManageProfilesScreen> {
             controller: _searchController,
             decoration: InputDecoration(
               hintText: 'Buscar usuários por nome, email ou username...',
-              prefixIcon: const Icon(Icons.search),
+              prefixIcon: const Icon(Icons.search_rounded),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.0),
                 borderSide: BorderSide.none,
               ),
               filled: true,
               fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+              hintStyle: Theme.of(context).inputDecorationTheme.hintStyle,
             ),
+            style: GoogleFonts.inter(color: Theme.of(context).textTheme.bodyLarge?.color),
             onChanged: _filterUsers,
           ),
         ),
@@ -133,12 +132,12 @@ class _ManageProfilesScreenState extends State<ManageProfilesScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.person_off, size: 80, color: Colors.grey[400]),
+                          Icon(Icons.person_off_rounded, size: 80, color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.4)),
                           const SizedBox(height: 16),
                           Text(
                             'Nenhum usuário encontrado.',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                            style: TextStyle(fontSize: 18, color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.6)),
                           ),
                         ],
                       ),
@@ -151,34 +150,34 @@ class _ManageProfilesScreenState extends State<ManageProfilesScreen> {
                           margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
                           elevation: 2,
+                          color: Theme.of(context).cardColor,
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: user.isActive ? Colors.blue : Colors.grey,
+                              backgroundColor: user.isActive ? Theme.of(context).primaryColor : Colors.grey.withOpacity(0.5),
                               child: Text(
                                 user.username[0].toUpperCase(),
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                style: GoogleFonts.inter(color: Theme.of(context).cardColor, fontWeight: FontWeight.bold),
                               ),
                             ),
-                            title: Text(user.username),
-                            subtitle: Text(user.email),
+                            title: Text(user.username, style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyLarge?.color)),
+                            subtitle: Text(user.email, style: GoogleFonts.inter(color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.7))),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: Icon(user.isActive ? Icons.toggle_on : Icons.toggle_off,
+                                  icon: Icon(user.isActive ? Icons.toggle_on_rounded : Icons.toggle_off_rounded,
                                       color: user.isActive ? Colors.green : Colors.red),
                                   onPressed: () => _toggleUserStatus(user),
                                   tooltip: user.isActive ? 'Desativar Usuário' : 'Ativar Usuário',
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  icon: const Icon(Icons.delete_rounded, color: Colors.redAccent),
                                   onPressed: () => _confirmDeleteUser(user),
                                   tooltip: 'Excluir Usuário',
                                 ),
                               ],
                             ),
                             onTap: () {
-                              // Navegar para a tela de perfil do usuário (somente visualização)
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
